@@ -7,6 +7,10 @@ import pandas as pd
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', type=int, default=10,
                     help='specify number of line items to show (default: 10)')
+# Optional command line argument to show least profitable default most                    
+parser.add_argument('-least', action='store_true', default=False,
+                    help='the least profitable will be shown (default: most)')
+
 args = parser.parse_args()
 
 # Open and parse the file 
@@ -36,7 +40,7 @@ df['Profit ($)'] = df['Sell Price'] - df['Production Cost']
 df['Profit (%)'] = df['Profit ($)'] / df['Production Cost'] * 100
 
 #Sort by the most profitable
-df.sort_values(by=['Profit ($)'], inplace=True, ascending=False)
+df.sort_values(by=['Profit ($)'], inplace=True, ascending=args.least)
 
 #Output ID, Production Cost, Sell Price, Profit ($), Profit (%), Name
 df = df[['ID', 'Production Cost', 'Sell Price', 'Profit ($)', 'Profit (%)', 'Name'  ]]
