@@ -39,6 +39,9 @@ df['Profit ($)'] = df['Sell Price'] - df['Production Cost']
 #Determine the percentage of profit
 df['Profit (%)'] = df['Profit ($)'] / df['Production Cost'] * 100
 
+#Ignoring non line items in profits
+df = df[ df['Profit (%)'].notna()]
+
 #Sort by the most profitable
 df.sort_values(by=['Profit ($)'], inplace=True, ascending=args.least)
 

@@ -14,7 +14,7 @@ o	ID, Production Cost, Production Price , Profit ($), Profit (%), Name
  
 You will have to touch many different concepts here that would be useful to learn.
  
-Stick it all in a repo on github and try to make useful commit messages as your work.
+Stick it all in a repo on github and try to make useful commit messages as you work.
 
 The File:
 
