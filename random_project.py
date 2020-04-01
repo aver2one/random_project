@@ -42,6 +42,9 @@ class Line:
         self.profit = self.price - self.cost
         self.profitp = round(self.profit / self.cost * Decimal("100"))
 
+    def __str__(self):
+        return f"{self.id:<4} {self.cost:>14,} {self.price:>14,} {self.profit:>10,} {self.profitp:>9}  {self.name}"
+
     @property
     def is_valid(self):
         if ";" in self.id or "ID" in self.id:
@@ -51,22 +54,19 @@ class Line:
         return True
 
 
-def process(num_lines, order):
-    lines = requests.get(URL).text.splitlines()
-    reader = csv.reader(lines, delimiter=";")
+class LineList:
+    def __init__(self, rows, num_lines, order):
+        self.num_lines = num_lines
+        self.lines = []
+        for row in rows:
+            line = Line(row)
+            if line.is_valid:
+                self.lines.append(line)
 
-    output = []
-    for row in reader:
-        line = Line(row)
-        if line.is_valid:
-            output.append(line)
+        self.lines.sort(key=operator.attrgetter("profit"), reverse=order)
 
-    output.sort(key=operator.attrgetter("profit"), reverse=order)
-    print("ID  Production Cost     Sell Price  Profit($) Profit(%)  Name")
-    for l in output[:num_lines]:
-        print(
-            f"""{l.id:<4} {l.cost:>14,} {l.price:>14,} {l.profit:>10,} {l.profitp:>9}  {l.name}"""
-        )
+    def __iter__(self):
+        return iter(self.lines[: self.num_lines])
 
 
 if __name__ == "__main__":
@@ -84,4 +84,9 @@ if __name__ == "__main__":
         help="the least profitable will be shown (default: most)",
     )
     args = parser.parse_args()
-    process(args.n, args.least)
+
+    print("ID  Production Cost     Sell Price  Profit($) Profit(%)  Name")
+    lines = requests.get(URL).text.splitlines()
+    rows = csv.reader(lines, delimiter=";")
+    for line in LineList(rows, args.n, args.least):
+        print(line)
