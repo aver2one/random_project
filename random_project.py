@@ -32,23 +32,25 @@ output = []
 
 print("ID  Production Cost  Sell Price  Profit($) Profit(%)  Name")
 for row in reader:
-    row[4] = "".join(i for i in row[4] if i.isdigit())
-    row[3] = "".join(i for i in row[3] if i.isdigit())
-    if row[4] and row[3]:
+    id = row[0]
+    name = row[1]
+    price = "".join(i for i in row[4] if i.isdigit())
+    cost = "".join(i for i in row[3] if i.isdigit())
+    if price and cost:
         # Converting Strings to ints
-        row[3] = int(row[3])
-        row[4] = int(row[4])
+        cost = int(cost)
+        price = int(price)
         # Dollar amount Profit for each line item
-        profit = row[4] - row[3]
+        profit = price - cost
         row.append(profit)
         if profit != 0:
             # Percentage of profit
-            profitp = round(profit / row[3] * 100)
+            profitp = round(profit / cost * 100)
             row.append(profitp)
             # Ignore sub items rows.
-            if ";" not in row[0]:
-                if "ID" not in row[0]:
-                    result = [row[0], row[3], row[4], row[15], row[16], row[1]]
+            if ";" not in id:
+                if "ID" not in id:
+                    result = [id, cost, price, profit, profitp, name]
                     output.append(result)
 
 output.sort(key=lambda output: output[3], reverse=args.least)
