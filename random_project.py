@@ -2,6 +2,7 @@ import argparse
 import csv
 import requests
 from re import sub
+from decimal import Decimal, InvalidOperation
 
 # Optional command line argument to specify number of lines to show default 10
 parser = argparse.ArgumentParser()
@@ -43,9 +44,9 @@ def force_money(s):
     """
     s = s.replace(",", ".")
     try:
-        money = float(sub(r"[^\d.]", "", s))
-    except ValueError:
-        money = float(0.0)
+        money = Decimal(sub(r"[^\d.]", "", s))
+    except InvalidOperation:
+        money = Decimal("0.0")
     return money
 
 
@@ -67,16 +68,16 @@ def process():
             continue
 
         # Percentage of profit
-        profitp = round(profit / cost * 100)
+        profitp = round(profit / cost * Decimal("100"))
         result = [id, cost, price, profit, profitp, name]
         output.append(result)
 
     output.sort(key=lambda output: output[3], reverse=args.least)
 
-    print("ID  Production Cost  Sell Price  Profit($) Profit(%)  Name")
+    print("ID  Production Cost     Sell Price  Profit($) Profit(%)  Name")
     for row in output[: args.n]:
         print(
-            f"""{row[0]:<4} {row[1]:<14}  {row[2]:<11} {row[3]:<10} {row[4]:<9} {row[5]:<11}"""
+            f"""{row[0]:<4} {row[1]:>14,} {row[2]:>14,} {row[3]:>10,} {row[4]:>9}  {row[5]}"""
         )
 
 
