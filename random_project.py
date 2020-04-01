@@ -1,6 +1,7 @@
 import argparse
 import csv
 import requests
+from re import sub
 
 # Optional command line argument to specify number of lines to show default 10
 parser = argparse.ArgumentParser()
@@ -30,23 +31,35 @@ lines = data.splitlines()
 reader = csv.reader(lines, delimiter=";")
 output = []
 
+
+def force_money(s):
+    """force_money returns a float from a string while handling some weirdness of this file.
+
+    This implementation is naive since. We know this document uses commas instead of
+    period for the decimal separator. So we change the comma into a period to preserve.
+    This would not work with UTF-8 or en-US currencies, since commas are just for
+    readability. There are better ways with the locale package.
+
+    """
+    s = s.replace(",", ".")
+    try:
+        money = float(sub(r"[^\d.]", "", s))
+    except ValueError:
+        money = float(0.0)
+    return money
+
+
 print("ID  Production Cost  Sell Price  Profit($) Profit(%)  Name")
 for row in reader:
     id = row[0]
     name = row[1]
-    price = "".join(i for i in row[4] if i.isdigit())
-    cost = "".join(i for i in row[3] if i.isdigit())
+    price = force_money(row[4])
+    cost = force_money(row[3])
     if price and cost:
-        # Converting Strings to ints
-        cost = int(cost)
-        price = int(price)
-        # Dollar amount Profit for each line item
         profit = price - cost
-        row.append(profit)
         if profit != 0:
             # Percentage of profit
             profitp = round(profit / cost * 100)
-            row.append(profitp)
             # Ignore sub items rows.
             if ";" not in id:
                 if "ID" not in id:
