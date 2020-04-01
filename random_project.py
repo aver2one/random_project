@@ -50,24 +50,30 @@ def force_money(s):
 
 
 def process():
-    print("ID  Production Cost  Sell Price  Profit($) Profit(%)  Name")
     for row in reader:
         id = row[0]
+        # Ignore header and sub items rows before running any calculations.
+        if ";" in id or "ID" in id:
+            continue
+
         name = row[1]
         price = force_money(row[4])
         cost = force_money(row[3])
-        if price and cost:
-            profit = price - cost
-            if profit != 0:
-                # Percentage of profit
-                profitp = round(profit / cost * 100)
-                # Ignore sub items rows.
-                if ";" not in id:
-                    if "ID" not in id:
-                        result = [id, cost, price, profit, profitp, name]
-                        output.append(result)
+        if not price or not cost:
+            continue
+
+        profit = price - cost
+        if not profit:
+            continue
+
+        # Percentage of profit
+        profitp = round(profit / cost * 100)
+        result = [id, cost, price, profit, profitp, name]
+        output.append(result)
 
     output.sort(key=lambda output: output[3], reverse=args.least)
+
+    print("ID  Production Cost  Sell Price  Profit($) Profit(%)  Name")
     for row in output[: args.n]:
         print(
             f"""{row[0]:<4} {row[1]:<14}  {row[2]:<11} {row[3]:<10} {row[4]:<9} {row[5]:<11}"""
