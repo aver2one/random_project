@@ -6,33 +6,7 @@ from re import sub
 
 import requests
 
-# Optional command line argument to specify number of lines to show default 10
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "-n",
-    type=int,
-    default=10,
-    help="specify number of line items to show (default: 10)",
-)
-# Optional command line argument to show least profitable default most
-parser.add_argument(
-    "-least",
-    action="store_false",
-    default=True,
-    help="the least profitable will be shown (default: most)",
-)
-
-args = parser.parse_args()
-
-url = (
-    "https://raw.githubusercontent.com/HexoCraft/MemWorth/"
-    "master/tools/Minecraft%20Economy%20Manager.csv"
-)
-
-data = requests.get(url).text
-lines = data.splitlines()
-reader = csv.reader(lines, delimiter=";")
-output = []
+URL = "https://raw.githubusercontent.com/HexoCraft/MemWorth/master/tools/Minecraft%20Economy%20Manager.csv"
 
 
 def force_money(s):
@@ -77,19 +51,37 @@ class Line:
         return True
 
 
-def process():
+def process(num_lines, order):
+    lines = requests.get(URL).text.splitlines()
+    reader = csv.reader(lines, delimiter=";")
+
+    output = []
     for row in reader:
         line = Line(row)
         if line.is_valid:
             output.append(line)
 
-    output.sort(key=operator.attrgetter("profit"), reverse=args.least)
+    output.sort(key=operator.attrgetter("profit"), reverse=order)
     print("ID  Production Cost     Sell Price  Profit($) Profit(%)  Name")
-    for l in output[: args.n]:
+    for l in output[:num_lines]:
         print(
             f"""{l.id:<4} {l.cost:>14,} {l.price:>14,} {l.profit:>10,} {l.profitp:>9}  {l.name}"""
         )
 
 
 if __name__ == "__main__":
-    process()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-n",
+        type=int,
+        default=10,
+        help="specify number of line items to show (default: 10)",
+    )
+    parser.add_argument(
+        "-least",
+        action="store_false",
+        default=True,
+        help="the least profitable will be shown (default: most)",
+    )
+    args = parser.parse_args()
+    process(args.n, args.least)
