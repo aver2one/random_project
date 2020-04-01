@@ -49,25 +49,30 @@ def force_money(s):
     return money
 
 
-print("ID  Production Cost  Sell Price  Profit($) Profit(%)  Name")
-for row in reader:
-    id = row[0]
-    name = row[1]
-    price = force_money(row[4])
-    cost = force_money(row[3])
-    if price and cost:
-        profit = price - cost
-        if profit != 0:
-            # Percentage of profit
-            profitp = round(profit / cost * 100)
-            # Ignore sub items rows.
-            if ";" not in id:
-                if "ID" not in id:
-                    result = [id, cost, price, profit, profitp, name]
-                    output.append(result)
+def process():
+    print("ID  Production Cost  Sell Price  Profit($) Profit(%)  Name")
+    for row in reader:
+        id = row[0]
+        name = row[1]
+        price = force_money(row[4])
+        cost = force_money(row[3])
+        if price and cost:
+            profit = price - cost
+            if profit != 0:
+                # Percentage of profit
+                profitp = round(profit / cost * 100)
+                # Ignore sub items rows.
+                if ";" not in id:
+                    if "ID" not in id:
+                        result = [id, cost, price, profit, profitp, name]
+                        output.append(result)
 
-output.sort(key=lambda output: output[3], reverse=args.least)
-for row in output[: args.n]:
-    print(
-        f"""{row[0]:<4} {row[1]:<14}  {row[2]:<11} {row[3]:<10} {row[4]:<9} {row[5]:<11}"""
-    )
+    output.sort(key=lambda output: output[3], reverse=args.least)
+    for row in output[: args.n]:
+        print(
+            f"""{row[0]:<4} {row[1]:<14}  {row[2]:<11} {row[3]:<10} {row[4]:<9} {row[5]:<11}"""
+        )
+
+
+if __name__ == "__main__":
+    process()
