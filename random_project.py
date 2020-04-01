@@ -1,8 +1,10 @@
 import argparse
 import csv
-import requests
-from re import sub
+import operator
 from decimal import Decimal, InvalidOperation
+from re import sub
+
+import requests
 
 # Optional command line argument to specify number of lines to show default 10
 parser = argparse.ArgumentParser()
@@ -50,34 +52,42 @@ def force_money(s):
     return money
 
 
+class Line:
+    """Line represents an individual line in the file."""
+
+    def __init__(self, row):
+        self.id = row[0]
+        self.name = row[1]
+        self.price = force_money(row[4])
+        self.cost = force_money(row[3])
+
+        # If not valid, don't bother finishing
+        if not self.is_valid:
+            return
+
+        self.profit = self.price - self.cost
+        self.profitp = round(self.profit / self.cost * Decimal("100"))
+
+    @property
+    def is_valid(self):
+        if ";" in self.id or "ID" in self.id:
+            return False
+        if not self.price or not self.cost:
+            return False
+        return True
+
+
 def process():
     for row in reader:
-        id = row[0]
-        # Ignore header and sub items rows before running any calculations.
-        if ";" in id or "ID" in id:
-            continue
+        line = Line(row)
+        if line.is_valid:
+            output.append(line)
 
-        name = row[1]
-        price = force_money(row[4])
-        cost = force_money(row[3])
-        if not price or not cost:
-            continue
-
-        profit = price - cost
-        if not profit:
-            continue
-
-        # Percentage of profit
-        profitp = round(profit / cost * Decimal("100"))
-        result = [id, cost, price, profit, profitp, name]
-        output.append(result)
-
-    output.sort(key=lambda output: output[3], reverse=args.least)
-
+    output.sort(key=operator.attrgetter("profit"), reverse=args.least)
     print("ID  Production Cost     Sell Price  Profit($) Profit(%)  Name")
-    for row in output[: args.n]:
+    for l in output[: args.n]:
         print(
-            f"""{row[0]:<4} {row[1]:>14,} {row[2]:>14,} {row[3]:>10,} {row[4]:>9}  {row[5]}"""
+            f"""{l.id:<4} {l.cost:>14,} {l.price:>14,} {l.profit:>10,} {l.profitp:>9}  {l.name}"""
         )
 
 
